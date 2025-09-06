@@ -1,0 +1,82 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Absensi PHBI Tebing Tinggi 2025</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        label { display: block; margin-top: 10px; }
+        canvas { border: 1px solid #000; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Formulir Absensi PHBI Kecamatan Tebing Tinggi 2025</h2>
+    <form id="absenForm">
+        <label>Nama Lengkap:</label>
+        <input type="text" id="nama" required>
+
+        <label>Instansi/Organisasi:</label>
+        <input type="text" id="instansi" required>
+
+        <label>Upload Foto:</label>
+        <input type="file" id="foto" accept="image/*" required>
+
+        <label>Tanda Tangan:</label>
+        <canvas id="signature" width="300" height="100"></canvas>
+        <button type="button" onclick="clearSignature()">Hapus Tanda Tangan</button>
+
+        <br><br>
+        <button type="button" onclick="generatePDF()">Unduh PDF</button>
+    </form>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const canvas = document.getElementById('signature');
+        const ctx = canvas.getContext('2d');
+        let drawing = false;
+
+        canvas.addEventListener('mousedown', () => drawing = true);
+        canvas.addEventListener('mouseup', () => drawing = false);
+        canvas.addEventListener('mousemove', draw);
+
+        function draw(e) {
+            if (!drawing) return;
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = '#000';
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        }
+
+        function clearSignature() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        async function generatePDF() {
+            const {{ jsPDF }} = window.jspdf;
+            const doc = new jsPDF();
+
+            const nama = document.getElementById('nama').value;
+            const instansi = document.getElementById('instansi').value;
+            const fotoFile = document.getElementById('foto').files[0];
+
+            doc.text("Absensi PHBI Kecamatan Tebing Tinggi 2025", 10, 10);
+            doc.text(`Nama: ${nama}`, 10, 20);
+            doc.text(`Instansi: ${instansi}`, 10, 30);
+
+            if (fotoFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    doc.addImage(e.target.result, 'JPEG', 10, 40, 50, 50);
+                    const signatureData = canvas.toDataURL();
+                    doc.addImage(signatureData, 'PNG', 10, 100, 100, 30);
+                    doc.save("absensi_phbi_2025.pdf");
+                };
+                reader.readAsDataURL(fotoFile);
+            }
+        }
+    </script>
+</body>
+</html>
